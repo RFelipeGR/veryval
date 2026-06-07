@@ -1,6 +1,7 @@
 package com.grupo8.openxava.model;
 
 import java.sql.Time;
+import java.time.LocalTime;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -9,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -31,8 +34,7 @@ public class RegistroAsistencia {
 
     private Time horaSalida;
 
-    @Required
-    @Column(length = 30)
+    @Column(length = 40)
     private String estado;
 
     private boolean esRetraso;
@@ -41,6 +43,49 @@ public class RegistroAsistencia {
     @Required
     @DescriptionsList(descriptionProperties = "cedula, nombre")
     private Empleado empleado;
+
+    @PrePersist
+    @PreUpdate
+    public void calcularEstadoAsistencia() {
+
+        if (horaEntrada == null || empleado == null || empleado.getHorario() == null) {
+            estado = "INCOMPLETO";
+            esRetraso = false;
+            return;
+        }
+
+        if (empleado.getHorario().getHoraEntrada() == null || empleado.getHorario().getHoraSalida() == null) {
+            estado = "HORARIO INCOMPLETO";
+            esRetraso = false;
+            return;
+        }
+
+        LocalTime entradaRegistrada = horaEntrada.toLocalTime();
+        LocalTime entradaEsperada = empleado.getHorario().getHoraEntrada().toLocalTime();
+        LocalTime salidaEsperada = empleado.getHorario().getHoraSalida().toLocalTime();
+
+        LocalTime limiteTolerancia = entradaEsperada.plusMinutes(15);
+
+        esRetraso = entradaRegistrada.isAfter(limiteTolerancia);
+
+        if (horaSalida == null) {
+            estado = esRetraso ? "EN CURSO CON RETRASO" : "EN CURSO";
+            return;
+        }
+
+        LocalTime salidaRegistrada = horaSalida.toLocalTime();
+
+        if (!salidaRegistrada.isAfter(entradaRegistrada)) {
+            estado = "INCONSISTENTE";
+            esRetraso = false;
+        } else if (salidaRegistrada.isBefore(salidaEsperada)) {
+            estado = esRetraso ? "SALIDA ANTICIPADA CON RETRASO" : "SALIDA ANTICIPADA";
+        } else if (esRetraso) {
+            estado = "COMPLETO CON RETRASO";
+        } else {
+            estado = "COMPLETO";
+        }
+    }
 
     public Long getId() {
         return id;
