@@ -17,8 +17,13 @@ import javax.persistence.TemporalType;
 
 import org.openxava.annotations.DescriptionsList;
 import org.openxava.annotations.Required;
+import org.openxava.annotations.Tab;
 
 @Entity
+@Tab(
+        properties = "fecha, empleado.cedula, empleado.nombre, horaEntrada, horaSalida, estado, esRetraso",
+        defaultOrder = "${fecha} desc"
+)
 public class RegistroAsistencia {
 
     @Id
@@ -63,7 +68,6 @@ public class RegistroAsistencia {
         LocalTime entradaRegistrada = horaEntrada.toLocalTime();
         LocalTime entradaEsperada = empleado.getHorario().getHoraEntrada().toLocalTime();
         LocalTime salidaEsperada = empleado.getHorario().getHoraSalida().toLocalTime();
-
         LocalTime limiteTolerancia = entradaEsperada.plusMinutes(15);
 
         esRetraso = entradaRegistrada.isAfter(limiteTolerancia);

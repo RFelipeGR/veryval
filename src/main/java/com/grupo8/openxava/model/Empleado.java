@@ -9,8 +9,13 @@ import javax.persistence.ManyToOne;
 
 import org.openxava.annotations.DescriptionsList;
 import org.openxava.annotations.Required;
+import org.openxava.annotations.Tab;
 
 @Entity
+@Tab(
+        properties = "cedula, nombre, cargo, activo, departamento.nombre, horario.horaEntrada, horario.horaSalida",
+        defaultOrder = "${nombre} asc"
+)
 public class Empleado {
 
     @Id

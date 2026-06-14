@@ -7,8 +7,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import org.openxava.annotations.Required;
+import org.openxava.annotations.Tab;
 
 @Entity
+@Tab(
+        properties = "nombre, descripcion",
+        defaultOrder = "${nombre} asc"
+)
 public class Departamento {
 
     @Id
@@ -21,6 +26,11 @@ public class Departamento {
 
     @Column(length = 255)
     private String descripcion;
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 
     public Long getId() {
         return id;
