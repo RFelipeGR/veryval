@@ -38,3 +38,6 @@ Thumbs.db
 
 # Maven wrapper (keep jar)
 /.mvn/wrapper/maven-wrapper.jar
+data/*.lck
+data/*.tmp
+data_backup/
